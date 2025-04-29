@@ -1,0 +1,34 @@
+name: PHPUnit Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Étape 1 : Récupérer le code source
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Étape 2 : Configurer PHP
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'  # Remplacez par votre version de PHP (ex: '8.1')
+          extensions: mbstring, intl, bcmath, pdo, mysql  # Extensions requises
+
+      # Étape 3 : Installer les dépendances Composer
+      - name: Install Composer dependencies
+        run: composer install --no-interaction
+
+      # Étape 4 : Exécuter PHPUnit
+      - name: Run PHPUnit tests
+        run: ./vendor/bin/phpunit --coverage-text
+- name: Generate coverage report
+  run: ./vendor/bin/phpunit --coverage-html coverage/
