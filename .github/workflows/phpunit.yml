@@ -30,5 +30,10 @@ jobs:
       # Étape 4 : Exécuter PHPUnit
       - name: Run PHPUnit tests
         run: ./vendor/bin/phpunit --coverage-text
-- name: Generate coverage report
-  run: ./vendor/bin/phpunit --coverage-html coverage/
+      - name: Generate coverage report
+        run: ./vendor/bin/phpunit --coverage-html coverage/
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+         path: vendor
+         key: ${{ runner.os }}-php-${{ hashFiles('composer.lock') }}
