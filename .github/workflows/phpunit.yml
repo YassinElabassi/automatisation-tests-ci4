@@ -2,53 +2,43 @@ name: PHPUnit Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Étape 1 : Récupérer le code source
+      # Étape 1: Checkout du code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Étape 2 : Configurer PHP avec cache OPcache pour performances
+      # Étape 2: Configuration PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, intl, bcmath, pdo_mysql  # Note: 'mysql' remplacé par 'pdo_mysql'
-          coverage: pcov  # Alternative plus rapide à Xdebug
-          ini-values: opcache.enable_cli=1  # Activation d'OPcache
+          extensions: mbstring, intl, bcmath, pdo_mysql
+          coverage: pcov
 
-      # Étape 3 : Cache des dépendances Composer (DOIT venir avant l'installation)
+      # Étape 3: Cache des dépendances
       - name: Cache Composer dependencies
         uses: actions/cache@v3
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
 
-      # Étape 4 : Installation des dépendances
+      # Étape 4: Installation des dépendances
       - name: Install dependencies
         run: |
-          composer validate --strict
           composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      # Étape 5 : Exécution des tests avec rapport de couverture
-      - name: Run tests and coverage
-        run: |
-          ./vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
-          ./vendor/bin/phpunit --coverage-html coverage/
+      # Étape 5: Exécution des tests
+      - name: Run PHPUnit tests
+        run: ./vendor/bin/phpunit --coverage-text
 
-      # Étape optionnelle : Upload du rapport de couverture
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report
-          path: coverage/
+      # Étape 6: Génération du rapport (optionnelle)
+      - name: Generate coverage report
+        if: success()
+        run: ./vendor/bin/phpunit --coverage-html coverage/
